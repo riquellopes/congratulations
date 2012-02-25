@@ -78,7 +78,7 @@ class CongratulationsTest(unittest.TestCase):
 	@patch('main.urllib2.urlopen')
 	def test_menssagem_tela_jonas(self, sr):
 		"""
-			Caso situação do Jonas ainda não tem cido processada, sistema gera mensagem::
+			Caso situação do Jonas já tenha cido processada, sistema gera mensagem::
 		"""
 		sr.return_value = MockUrllib('teste_dentista.html')
 		c = Congratulations(name='Jonas Brother', url=app.config['URL_D'], name_display='@brother')
@@ -90,7 +90,7 @@ class CongratulationsTest(unittest.TestCase):
 	@patch('main.urllib2.urlopen')
 	def test_messagem_tela_leandro(self, sr):
 		"""
-			Caso situação do Leandro ainda não tem cido processada, sistema gera mensagem::
+			Caso situação do Leandro já tenha cido processada, sistema gera mensagem::
 		"""
 		sr.return_value = MockUrllib('teste_dentista.html')
 		c = Congratulations(name='Leandro', url=app.config['URL_D'], name_display='@leandro')
