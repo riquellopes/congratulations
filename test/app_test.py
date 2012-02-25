@@ -71,8 +71,8 @@ class CongratulationsTest(unittest.TestCase):
 		sr.return_value = MockUrllib('teste.html')
 		c = Congratulations(name='Jarbas', url=app.config['URL_S'], name_display='@riquellopes')
 		c.search()
-		msg = ("Mr <span class='name'>@riquellopes</span>, your curriculum don't processed.<br /><a href='%(link)s'>PucRio</a><br />Last update:<em>%(date)s</em>\
-			   " % {'link':app.config['URL_S'], 'date':datetime.datetime.now().strftime("%d %B, %Y")} ).strip()
+		msg = ("<h2>Mr <span class='name'>@riquellopes</span>, your curriculum wasn't <span class='wait'>processed</span>.</h2><a href='%(link)s' class=\"label label-info\">PucRio</a><br /><span class=\"label label-info\">Last update: <i>%(date)s</i></span>\
+			   " % {'link':app.config['URL_S'], 'date':datetime.datetime.now().strftime("%Y %B, %d %H:%M")} ).strip()
 		assert_equals(c.display_menssage.lower(), msg.lower())
 	
 	@patch('main.urllib2.urlopen')
@@ -83,8 +83,8 @@ class CongratulationsTest(unittest.TestCase):
 		sr.return_value = MockUrllib('teste_dentista.html')
 		c = Congratulations(name='Jonas Brother', url=app.config['URL_D'], name_display='@brother')
 		c.search()
-		msg = ("Mr <span class='name'>@brother</span>, sorry your curriculum don't accepted.<br /><a href='%(link)s'>PucRio</a><br />Last update:<em>%(date)s</em>\
-			   " % {'link':app.config['URL_D'], 'date':datetime.datetime.now().strftime("%d %B, %Y")} ).strip()
+		msg = ("<h2>Mr <span class='name'>@brother</span>, sorry your curriculum wasn't <span class='failure'>accepted</span>.</h2><a href='%(link)s' class=\"label label-info\">PucRio</a><br /><span class=\"label label-info\">Last update: <i>%(date)s</i></span>\
+			   " % {'link':app.config['URL_D'], 'date':datetime.datetime.now().strftime("%Y %B, %d %H:%M")} ).strip()
 		assert_equals(c.display_menssage.lower(), msg.lower())
 	
 	@patch('main.urllib2.urlopen')
@@ -95,8 +95,8 @@ class CongratulationsTest(unittest.TestCase):
 		sr.return_value = MockUrllib('teste_dentista.html')
 		c = Congratulations(name='Leandro', url=app.config['URL_D'], name_display='@leandro')
 		c.search()
-		msg = ("Mr <span class='name'>@leandro</span>, congratulations your curriculum was accepted.<br /><a href='%(link)s'>PucRio</a><br />Last update:<em>%(date)s</em>\
-			   " % {'link':app.config['URL_D'], 'date':datetime.datetime.now().strftime("%d %B, %Y")} ).strip()
+		msg = ("<h2>Mr <span class='name'>@leandro</span>, congratulations your curriculum was <span class='sucess'>accepted</span>.</h2><a href='%(link)s' class=\"label label-info\">PucRio</a><br /><span class=\"label label-info\">Last update: <i>%(date)s</i></span>\
+			   " % {'link':app.config['URL_D'], 'date':datetime.datetime.now().strftime("%Y %B, %d %H:%M")} ).strip()
 		assert_equals(c.display_menssage.lower(), msg.lower())
 	
 	def test_caso_search_nao_seja_chamado(self):
@@ -108,3 +108,24 @@ class CongratulationsTest(unittest.TestCase):
 			c.display_menssage
 		except Exception, e:
 			assert_true(True)
+		
+class ViewTest(unittest.TestCase):
+	
+	def setUp(self):
+		self.app = app.test_client()
+	
+	def test_home(self):
+		"""
+			Titulo na página home deve ser Congratulatios app::
+		"""
+		rs = self.app.get("/")
+		assert_true('<title>Congratulations APP</title>' in str(rs.data) )
+	
+	def test_process(self):
+		"""
+			Tada vez que o process for acesso, ele deve atualizar as informações do index.html::
+		"""
+		self.app.get('/process')
+		handle = open(app.config['TEMPLATES_DIR']+"/index.html")
+		html = "".join( handle )
+		assert_true('Last update: <i>%s</i>' % (datetime.datetime.now().strftime("%Y %B, %d %H:%M")) in html)
