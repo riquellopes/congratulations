@@ -3,7 +3,7 @@ import datetime
 import unittest
 from mock import Mock, patch
 from nose.tools import assert_equals, assert_true, assert_raises
-from main import Congratulations, app
+from app import Congratulations, app
 
 class MockUrllib(Mock):
 	
@@ -33,7 +33,7 @@ class CongratulationsTest(unittest.TestCase):
 		"""
 		assert_raises(Exception, Congratulations)
 	
-	@patch('main.urllib2.urlopen')
+	@patch('app.urllib2.urlopen')
 	def test_jonas_brother_no_accepted(self, sr):
 		"""
 			Consinscrito Jonas Brother não teve seu perfil aprovado::
@@ -43,7 +43,7 @@ class CongratulationsTest(unittest.TestCase):
 		c.search()
 		assert_equals(c.status.lower(), "no accepted")
 	
-	@patch('main.urllib2.urlopen')
+	@patch('app.urllib2.urlopen')
 	def test_leandro_accepted(self, sr):
 		"""
 			Consinscrito Leandro teve seu perfil aprovado::
@@ -53,7 +53,7 @@ class CongratulationsTest(unittest.TestCase):
 		c.search()
 		assert_equals(c.status.lower(), "accepted")
 	
-	@patch('main.urllib2.urlopen')
+	@patch('app.urllib2.urlopen')
 	def test_jarbas_no_processed(self, sr):
 		"""
 			Consinscrito Jarbas ainda não teve seu perfil processado::
@@ -63,7 +63,7 @@ class CongratulationsTest(unittest.TestCase):
 		c.search()
 		assert_equals(c.status.lower(), "no processed")
 		
-	@patch('main.urllib2.urlopen')
+	@patch('app.urllib2.urlopen')
 	def test_menssage_tela_jarbas(self, sr):
 		"""
 			Caso situação do Jarbas ainda não tem cido processada, sistema gera mensagem::
@@ -75,7 +75,7 @@ class CongratulationsTest(unittest.TestCase):
 			   " % {'link':app.config['URL_S'], 'date':datetime.datetime.now().strftime("%Y %B, %d %H:%M")} ).strip()
 		assert_equals(c.display_menssage.lower(), msg.lower())
 	
-	@patch('main.urllib2.urlopen')
+	@patch('app.urllib2.urlopen')
 	def test_menssagem_tela_jonas(self, sr):
 		"""
 			Caso situação do Jonas já tenha cido processada, sistema gera mensagem::
@@ -87,7 +87,7 @@ class CongratulationsTest(unittest.TestCase):
 			   " % {'link':app.config['URL_D'], 'date':datetime.datetime.now().strftime("%Y %B, %d %H:%M")} ).strip()
 		assert_equals(c.display_menssage.lower(), msg.lower())
 	
-	@patch('main.urllib2.urlopen')
+	@patch('app.urllib2.urlopen')
 	def test_messagem_tela_leandro(self, sr):
 		"""
 			Caso situação do Leandro já tenha cido processada, sistema gera mensagem::
