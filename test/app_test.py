@@ -125,7 +125,7 @@ class ViewTest(unittest.TestCase):
 		"""
 			Tada vez que o process for acesso, ele deve atualizar as informações do index.html::
 		"""
-		self.app.get('/process')
+		self.app.get('/')
 		handle = open(app.config['TEMPLATES_DIR']+"/index.html")
 		html = "".join( handle )
 		assert_true('Last update: <i>%s</i>' % (datetime.datetime.now().strftime("%Y %B, %d %H:%M")) in html)

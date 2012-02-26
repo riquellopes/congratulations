@@ -53,8 +53,7 @@ class Congratulations(object):
 		except KeyError:
 			raise Exception( "Status do consinscrito ainda não foi recuperado." )
 
-		
-@app.route("/process")
+@app.before_request
 def process():
 	"""
 		Processa informações sobre consinscrito::
@@ -64,7 +63,6 @@ def process():
 	html = open( '%s/index.html' % app.config['TEMPLATES_DIR'], 'w' )
 	html.write( render_template("index_cache.html", cong=cong) )
 	html.close()
-	return ""
 	
 @app.route("/")
 def home():
