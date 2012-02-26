@@ -4,9 +4,17 @@ import urllib2
 import re
 from flask import Flask, render_template
 
+"""
+	Renomeia função strptime::
+"""
+to_date = datetime.datetime.strptime
+
 app = Flask(__name__)
 app.config.from_object("settings")
 
+class CongratulationsExEnd(Exception):
+	pass
+	
 class Congratulations(object):
 	
 	def __init__(self, **kwargs):
@@ -19,11 +27,15 @@ class Congratulations(object):
 		self.date_request = None
 		self.name_display = kwargs.get('name_display')
 		self.url = kwargs.get('url')
+		self.date_end = kwargs.get('date_end') if kwargs.get('date_end') is None else to_date(kwargs.get('date_end'), '%Y-%m-%d')
 		
 	def search(self):
 		"""
 			Método que recupera situação do consinscrito::
-		"""
+		"""			
+		if not self.date_end is None and ( self.date_end - datetime.datetime.now() ).days <= 0:
+			raise CongratulationsExEnd( "Período de resultados encerrado." )
+			
 		rs = urllib2.urlopen(self.url).read()
 		students = ( "".join(re.findall('(?s)<div id="dados">(.*?)</div>', rs)) )
 		students = ( "".join(re.findall('(?s)<ul>(.*?)</ul>', (re.split('</h4>', students)[1])  )) ).strip()
@@ -58,12 +70,15 @@ def process():
 	"""
 		Processa informações sobre consinscrito::
 	"""
-	cong = Congratulations(name=app.config['STUDENT_NAME'], url=app.config['URL_S'], name_display='@riquellopes')
-	cong.search()
-	html = open( '%s/index.html' % app.config['TEMPLATES_DIR'], 'w' )
-	html.write( render_template("index_cache.html", cong=cong) )
-	html.close()
-	
+	try:
+		cong = Congratulations(name=app.config['STUDENT_NAME'], url=app.config['URL_S'], name_display='@riquellopes', date_end=app.config['DATE_END'])
+		cong.search()
+		html = open( '%s/index.html' % app.config['TEMPLATES_DIR'], 'w' )
+		html.write( render_template("index_cache.html", cong=cong) )
+		html.close()
+	except CongratulationsExEnd:
+		pass
+		
 @app.route("/")
 def home():
 	"""

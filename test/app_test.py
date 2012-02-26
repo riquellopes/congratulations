@@ -2,8 +2,8 @@
 import datetime
 import unittest
 from mock import Mock, patch
-from nose.tools import assert_equals, assert_true, assert_raises
-from app import Congratulations, app
+from nose.tools import assert_equals, assert_true, assert_raises, assert_false
+from app import Congratulations, CongratulationsExEnd, app
 
 class MockUrllib(Mock):
 	
@@ -14,7 +14,10 @@ class MockUrllib(Mock):
 		handle = open(self.file_test)
 		html = "".join( handle )
 		return html
-		
+
+class MockCongratulations(Congratulations):
+	pass
+	
 class CongratulationsTest(unittest.TestCase):
 
 	def test_class_Congratulations_existe(self):
@@ -108,24 +111,44 @@ class CongratulationsTest(unittest.TestCase):
 			c.display_menssage
 		except Exception, e:
 			assert_true(True)
+	
+	@patch('app.urllib2.urlopen')
+	def test_periodo(self, sr):
+		"""
+			Caso período de liberação de resultado já tenha encerrado, search deve levantar exception::
+		"""	
+		sr.return_value = MockUrllib('teste_dentista.html')
+		c = Congratulations(name='Leandro', url=app.config['URL_D'], name_display='@leandro', date_end='2012-02-26')
+		assert_raises(CongratulationsExEnd, c.search)
 		
 class ViewTest(unittest.TestCase):
 	
 	def setUp(self):
 		self.app = app.test_client()
 	
-	def test_home(self):
+	@patch('app.Congratulations')
+	def test_home(self, cg):
 		"""
-			Titulo na página home deve ser Congratulatios app::
+			Título na página home deve ser Congratulatios app::
 		"""
 		rs = self.app.get("/")
 		assert_true('<title>Congratulations APP</title>' in str(rs.data) )
 	
 	def test_process(self):
 		"""
-			Tada vez que o process for acesso, ele deve atualizar as informações do index.html::
+			Toda vez que o index for acessado, sistema deve atualizar as informações do arquivo index.html::
 		"""
-		self.app.get('/')
+		rs = self.app.get('/')
 		handle = open(app.config['TEMPLATES_DIR']+"/index.html")
 		html = "".join( handle )
-		assert_true('Last update: <i>%s</i>' % (datetime.datetime.now().strftime("%Y %B, %d %H:%M")) in html)
+		handle.close()
+		assert_true('Last update: <i>%s</i>' % (datetime.datetime.now().strftime("%Y %B, %d %H:%M")) in str(html))
+	
+	@patch('app.Congratulations')
+	def test_process_end(self, cg):
+		"""
+			Caso periodo de resultados tenha encerrado, arquivo index não deve ser mais atualizado::
+		"""
+		cg.side_effect = CongratulationsExEnd("")
+		rs = self.app.get('/')
+		assert_false('Last update: <i>%s</i>' % (datetime.datetime.now().strftime("%Y %B, %d %H:%M")) in str(rs.data))
