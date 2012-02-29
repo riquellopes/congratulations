@@ -33,6 +33,9 @@ class Congratulations(object):
 		"""
 			Método que recupera situação do consinscrito::
 		"""			
+		if not self.date_end is None: 
+			print ( self.date_end - datetime.datetime.now() ).days
+			
 		if not self.date_end is None and ( self.date_end - datetime.datetime.now() ).days <= 0:
 			raise CongratulationsExEnd( "Período de resultados encerrado." )
 			

@@ -138,17 +138,19 @@ class ViewTest(unittest.TestCase):
 		"""
 			Toda vez que o index for acessado, sistema deve atualizar as informações do arquivo index.html::
 		"""
-		rs = self.app.get('/')
+		self.app.get('/')
 		handle = open(app.config['TEMPLATES_DIR']+"/index.html")
 		html = "".join( handle )
 		handle.close()
 		assert_true('Last update: <i>%s</i>' % (datetime.datetime.now().strftime("%Y %B, %d %H:%M")) in str(html))
 	
 	@patch('app.Congratulations')
-	def test_process_end(self, cg):
+	@patch('app.render_template')
+	def test_process_end(self, cg, rt):
 		"""
 			Caso periodo de resultados tenha encerrado, arquivo index não deve ser mais atualizado::
 		"""
 		cg.side_effect = CongratulationsExEnd("")
+		rt.return_value = MockUrllib('teste_msg.html')
 		rs = self.app.get('/')
-		assert_false('Last update: <i>%s</i>' % (datetime.datetime.now().strftime("%Y %B, %d %H:%M")) in str(rs.data))
+		assert_false('Last update: <i>%s</i>' % (datetime.datetime.now().strftime("%Y %B, %d %H:%M")) in str(rs.data) )
