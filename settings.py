@@ -6,7 +6,7 @@ TEMPLATES_DIR = path.join(PROJECT_ROOT, "templates")
 
 URL_D = "http://www.cce.puc-rio.br/sitecce/website/website.dll/candidatos?cOferec=6103"
 URL_S = "http://www.cce.puc-rio.br/sitecce/website/website.dll/candidatos?cOferec=5853"
-DATE_END = '2012-03-02'
+DATE_END = '2012-03-01'
 
 try:
 	from local_settings import *

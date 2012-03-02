@@ -32,11 +32,8 @@ class Congratulations(object):
 	def search(self):
 		"""
 			Método que recupera situação do consinscrito::
-		"""			
-		if not self.date_end is None: 
-			print ( self.date_end - datetime.datetime.now() ).days
-			
-		if not self.date_end is None and ( self.date_end - datetime.datetime.now() ).days <= 0:
+		"""		
+		if not self.date_end is None and ( self.date_end - datetime.datetime.now() ).days < -1:
 			raise CongratulationsExEnd( "Período de resultados encerrado." )
 			
 		rs = urllib2.urlopen(self.url).read()
@@ -64,7 +61,7 @@ class Congratulations(object):
 		try:
 			return ("<h2>Mr <span class='name'>%(name_display)s</span>, %(default_msg)s.</h2><a href='%(link)s' class=\"label label-info\">PucRio</a><br /><span class=\"label label-info\">Last update: <i>%(date)s</i></span>\
 					" % {'name_display':self.name_display, 'default_msg':dict_msg[self.status], 
-				   		 'link':self.url, 'date':datetime.datetime.now().strftime("%Y %B, %d %H:%M")} ).strip()
+				   		 'link':self.url, 'date':self.date_request.strftime("%Y %B, %d %H:%M")} ).strip()
 		except KeyError:
 			raise Exception( "Status do consinscrito ainda não foi recuperado." )
 

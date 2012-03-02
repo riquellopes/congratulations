@@ -134,10 +134,12 @@ class ViewTest(unittest.TestCase):
 		rs = self.app.get("/")
 		assert_true('<title>Congratulations APP</title>' in str(rs.data) )
 	
-	def test_process(self):
+	@patch('app.urllib2.urlopen')
+	def test_process(self, sr):
 		"""
 			Toda vez que o index for acessado, sistema deve atualizar as informações do arquivo index.html::
 		"""
+		sr.return_value = MockUrllib('teste_sistema.html')
 		self.app.get('/')
 		handle = open(app.config['TEMPLATES_DIR']+"/index.html")
 		html = "".join( handle )
