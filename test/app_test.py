@@ -122,8 +122,18 @@ class CongratulationsTest(unittest.TestCase):
 			Método save deve gravar as informações em congratulatios.json::
 		"""
 		sr.return_value = MockUrllib('teste_dentista.html')
-		c = Congratulations(name='Leandro', url=app.config['URL_D'], name_display='@leandro', date_end='2012-03-03')
+		date_end = datetime.datetime.now().strftime("%Y-%m-%d")
+		c = Congratulations(name='Leandro', url=app.config['URL_D'], name_display='@leandro', date_end=date_end)
 		assert_true(c.save())
+	
+	@patch('app.urllib2.urlopen')	
+	def test_save_none(self, sr):
+		"""
+			Caso periodo de veficação tenha encerrado, save deve retorna None::
+		"""
+		sr.return_value = MockUrllib('teste_dentista.html')
+		c = Congratulations(name='Leandro', url=app.config['URL_D'], name_display='@leandro', date_end='2012-02-26')
+		assert_true(c.save() is None)
 		
 class ViewTest(unittest.TestCase):
 	
