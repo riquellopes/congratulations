@@ -1,4 +1,6 @@
 #coding: utf-8
+import os
+import json
 import datetime
 import urllib2
 import re
@@ -16,31 +18,44 @@ class CongratulationsExEnd(Exception):
 	pass
 	
 class Congratulations(object):
+	"""Conteiner de agradecimentos::"""
+	name_display = ""
+	url = ""
+	status = ""
+	date_end = ""
+	date_request = None
+	root = os.path.abspath( os.path.dirname(__file__) )
 	
+	def __new__(cls, *args, **kwargs):
+		handle = open('%s/static/js/congratulations.json' % cls.root, 'r')
+		values = json.load(handle)
+		handle.close()
+		for key in values:
+			setattr(cls, key, values[key])
+		return super(Congratulations, cls).__new__(cls)
+		
 	def __init__(self, **kwargs):
 		try:
-			self.name = (kwargs['name'].strip())
+			self.name = (str(kwargs['name']).strip())
 		except KeyError:
 			raise Exception( "O nome do consinscrito, deve ser informado." )
 			
-		self.status = ""
-		self.date_request = None
 		self.name_display = kwargs.get('name_display')
 		self.url = kwargs.get('url')
-		self.date_end = kwargs.get('date_end') if kwargs.get('date_end') is None else to_date(kwargs.get('date_end'), '%Y-%m-%d')
+		self.date_end = kwargs.get('date_end')
 		
 	def search(self):
 		"""
 			Método que recupera situação do consinscrito::
 		"""		
-		if not self.date_end is None and ( self.date_end - datetime.datetime.now() ).days < -1:
+		if not self.date_end is None and ( to_date(self.date_end, '%Y-%m-%d') - datetime.datetime.now() ).days < -1:
 			raise CongratulationsExEnd( "Período de resultados encerrado." )
 			
 		rs = urllib2.urlopen(self.url).read()
 		students = ( "".join(re.findall('(?s)<div id="dados">(.*?)</div>', rs)) )
 		students = ( "".join(re.findall('(?s)<ul>(.*?)</ul>', (re.split('</h4>', students)[1])  )) ).strip()
 		
-		self.date_request = datetime.datetime.now()
+		self.date_request = datetime.datetime.now().strftime("%Y %B, %d %H:%M")
 		self.status = "No accepted"
 		if not students:
 			self.status = "No processed"
@@ -59,29 +74,32 @@ class Congratulations(object):
 		}
 		
 		try:
-			return ("<h2>Mr <span class='name'>%(name_display)s</span>, %(default_msg)s.</h2><a href='%(link)s' class=\"label label-info\">PucRio</a><br /><span class=\"label label-info\">Last update: <i>%(date)s</i></span>\
-					" % {'name_display':self.name_display, 'default_msg':dict_msg[self.status], 
-				   		 'link':self.url, 'date':self.date_request.strftime("%Y %B, %d %H:%M")} ).strip()
+			return dict_msg[self.status]
 		except KeyError:
 			raise Exception( "Status do consinscrito ainda não foi recuperado." )
-
-@app.before_request
-def process():
-	"""
-		Processa informações sobre consinscrito::
-	"""
-	try:
-		cong = Congratulations(name=app.config['STUDENT_NAME'], url=app.config['URL_S'], name_display='@riquellopes', date_end=app.config['DATE_END'])
-		cong.search()
-		html = open( '%s/index.html' % app.config['TEMPLATES_DIR'], 'w' )
-		html.write( render_template("index_cache.html", cong=cong) )
-		html.close()
-	except CongratulationsExEnd:
-		pass
-		
+	
+	def save(self):
+		"""
+			Método que salva as informações em congratulatios.json::
+		"""
+		try:
+			self.search()
+			handle = open('%s/static/js/congratulations.json' % self.root, 'w')
+			values = json.dumps(self.__dict__)
+			handle.write(values)
+			handle.close()
+			return True
+		except:
+			pass
+			
 @app.route("/")
 def home():
 	"""
 		Recupera página principal do sistema::
 	"""
-	return render_template("index.html")
+	cong = Congratulations(name=app.config['STUDENT_NAME'], 
+						   url=app.config['URL_S'], 
+						   name_display=app.config['NAME_DISPLAY'], 
+						   date_end=app.config['DATE_END'])
+	cong.save()
+	return render_template("index.html", cong=cong)
