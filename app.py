@@ -101,5 +101,5 @@ def home():
 						   url=app.config['URL_S'], 
 						   name_display=app.config['NAME_DISPLAY'], 
 						   date_end=app.config['DATE_END'])
-	#cong.save()
+	cong.save()
 	return render_template("index.html", cong=cong)
